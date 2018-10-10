@@ -1,0 +1,22 @@
+{% extends 'BaseUI/BaseHelp/baseHelp_content.html' %}
+{% load staticfiles %}
+{% load static %}
+
+{% block library %}
+{% endblock %}
+
+{% block title %}Facility Management{% endblock %}
+
+{% block vaco %}
+    <ul>
+        <h5 style="padding-top: 20px">User Manual</h5>
+        <li style="padding-top: 20px"><a href="{% block for_Citizen %}{% endblock %}">&emsp;for Citizen</a><br></li>
+        <li style="padding-top: 20px"><a href="{% block for_Business %}{% endblock %}">&emsp;for Business</a><br></li>
+        <li style="padding-top: 20px"><a href="{% block for_Management %}{% endblock %}">&emsp;for Management</a><br></li>
+    </ul>
+{% endblock %}
+{% block data-content %}
+    <div>
+    </div>
+{% endblock %}
+
