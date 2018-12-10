@@ -11,9 +11,9 @@
 {% block vaco %}
     <ul>
         <h5 style="padding-top: 20px">User Manual</h5>
-        <li style="padding-top: 20px"><a href="{% block for_Citizen %}{% endblock %}">&emsp;for Citizen</a><br></li>
-        <li style="padding-top: 20px"><a href="{% block for_Business %}{% endblock %}">&emsp;for Business</a><br></li>
-        <li style="padding-top: 20px"><a href="{% block for_Management %}{% endblock %}">&emsp;for Management</a><br></li>
+        <li style="padding-top: 20px"><a href="{% url 'helpUserManualCtizen' %}">&emsp;for Citizen</a><br></li>
+        <li style="padding-top: 20px"><a href="{% url 'helpUserManualBusiness' %}">&emsp;for Business</a><br></li>
+        <li style="padding-top: 20px"><a href="{% url 'helpUserManualManager' %}">&emsp;for Management</a><br></li>
     </ul>
 {% endblock %}
 {% block data-content %}
@@ -31,7 +31,7 @@
                 2. Nhấn login <br>
                 3. Nhập username and Passwork <br>
                 4. Nhấn SignIn <br>
-                Khí đó trang chủ của Citizen sẽ suất hiện.
+                >> Khí đó trang chủ của Citizen sẽ suất hiện.
             </div>
         </div>
 
@@ -48,10 +48,10 @@
                 1. Nhấn vào mục view của trang <a href="http://127.0.0.1:8888/citizen/">http://127.0.0.1:8888/citizen/</a> <br>
                 2. Nhấn List Facility <br>
                 3. Chọn Proposal thông tin kết quả sẽ hiện ra: <br>
-                   + Probability of failure: Kết quả tính toán. <br>
-                   + Consequence of failure: kết quả chi tiết. <br>
-                   + Risk Matrix: Matran kết quả <br>
-                   + Risk Chart: đồ thị kết quả. <br>
+                &emsp;+ Probability of failure: Kết quả tính toán. <br>
+                &emsp;+ Consequence of failure: kết quả chi tiết. <br>
+                &emsp;+ Risk Matrix: Matran kết quả <br>
+                &emsp;+ Risk Chart: đồ thị kết quả. <br>
             </div>
         </div>
     </div>

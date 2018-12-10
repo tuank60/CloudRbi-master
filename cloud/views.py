@@ -1,5 +1,6 @@
 import os
 from django.core.wsgi import get_wsgi_application
+from numpy.lib.function_base import vectorize
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'RbiCloud.settings'
 application = get_wsgi_application()
@@ -73,6 +74,8 @@ def handler404(request):
 
 ################ Business UI Control ###################
 def ListFacilities(request, siteID):
+    faci = models.Facility.objects.filter(siteid=siteID)[0]
+    veri = models.Verification.objects.filter(Q(facility=faci.facilityid), Q(Is_active=0)).count()
     count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email), Q(Is_see=0)).count()
     noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
     countnoti = noti.filter(state=0).count()
@@ -88,7 +91,6 @@ def ListFacilities(request, siteID):
             dataF['ManagementFactor'] = a.managementfactor
             dataF['RiskTarget'] = risTarget.risktarget_fc
             risk.append(dataF)
-
         pagiFaci = Paginator(risk, 25)
         pageFaci = request.GET.get('page',1)
         try:
@@ -106,9 +108,10 @@ def ListFacilities(request, siteID):
                 if(request.POST.get('%d' %a.facilityid)):
                     a.delete()
             return redirect('facilitiesDisplay', siteID)
-    except:
+    except Exception as e:
+        print(e)
         raise Http404
-    return render(request, 'FacilityUI/facility/facilityListDisplay.html', {'obj': users,'siteID':siteID,'count':count,'info':request.session,'noti':noti,'countnoti':countnoti})
+    return render(request, 'FacilityUI/facility/facilityListDisplay.html', {'obj': users,'siteID':siteID,'count':count,'info':request.session,'noti':noti,'countnoti':countnoti,'veri':veri})
 def NewFacilities(request,siteID):
     noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
     countnoti = noti.filter(state=0).count()
@@ -588,6 +591,7 @@ def ListProposal(request, componentID):
             if '_delete' in request.POST:
                 for a in rwass:
                     if request.POST.get('%d' %a.id):
+                        print('a')
                         a.delete()
                 return redirect('proposalDisplay', componentID=componentID)
             elif '_cancel' in request.POST:
@@ -2917,7 +2921,6 @@ def MassagesHome(request):
         if request.method=='POST':
             for data1 in datacontent:
                 if request.POST.get('%d' %data1.id):
-                    print(data1.id)
                     email1=models.Emailto.objects.get(id=data1.id)
                     email1.delete()
                     return redirect('massages')
@@ -2927,7 +2930,7 @@ def MassagesHome(request):
             acti.save()
     except Exception as e:
         print(e)
-        Http404
+        raise Http404
     return render(request,'BaseUI/BaseMassages/BaseMassages.html',{'datacontent':datacontent,'info':request.session,'noti':noti,'countnoti':countnoti,'count':count})
 def Email_Massage_sent(request):
     datacontent = models.Emailsent.objects.filter(Emails=models.ZUser.objects.filter(id=request.session['id'])[0].email)
@@ -2962,22 +2965,66 @@ def Email_Massage_sent(request):
 
 ################# Help #################
 def Help(requset):
-    print('aa')
-    return render(requset,'help/help.html')
+    noti = models.ZNotification.objects.all().filter(id_user=requset.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=requset.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(requset,'help/help.html',{'info':requset.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_Usermanual_Citizen(request):
-    return render(request, 'help/User_Manual/help_Citizen.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request, 'help/User_Manual/help_Citizen.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_Usermanual_Business(request):
-    return render(request, 'help/User_Manual/help_Business.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request, 'help/User_Manual/help_Business.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_Usermanual_Manager(request):
-    return render(request, 'help/User_Manual/help_Manager.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request, 'help/User_Manual/help_Manager.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_AccountManagement_LoginPass(request):
-    return render(request,'help/Account_Management/Login_and_Password.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request,'help/Account_Management/Login_and_Password.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_AccountManagement_PerInfo(request):
-    return render(request,'help/Account_Management/Personal_Information.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request,'help/Account_Management/Personal_Information.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_AccountManagement_AccessDownload(request):
-    return render(request,'help/Account_Management/Access_and_Download_Information.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request,'help/Account_Management/Access_and_Download_Information.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
 def Help_AccountManagement_Notification(request):
-    return render(request,'help/Account_Management/Notification.html')
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request,'help/Account_Management/Notification.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
+def Policies_Reports(request):
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request,'help/Policies_Reports.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
+def Private_Safe(request):
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    return render(request,'help/Private_Safe.html',{'info':request.session,'count':count,'noti':noti,'countnoti':countnoti})
+
 ################ Dang ki tai khoan ####################
 def AccountCitizen(request):
     infor = {}
@@ -3433,10 +3480,10 @@ def FullyDamageFactorMana(request, proposalID):
         data['pofap2category'] = df.pofap2category
         data['pofap3category'] = df.pofap3category
         if request.method == 'POST':
-            df.thinningtype = request.POST.get('thinningType')
-            df.save()
-            ReCalculate.ReCalculate(proposalID)
-            return redirect('damgeFactor', proposalID)
+            # df.thinningtype = request.POST.get('thinningType')
+            # df.save()
+            # ReCalculate.ReCalculate(proposalID)
+            return redirect('veridamgeFactorMana', proposalID)
     except Exception as e:
         print(e)
         raise Http404
@@ -3488,6 +3535,8 @@ def FullyConsequenceMana(request, proposalID):
             data['business_cost'] = roundData.roundMoney(bottomConsequences.business_cost)
             data['consequence'] = roundData.roundMoney(bottomConsequences.consequence)
             data['consequencecategory'] = bottomConsequences.consequencecategory
+            if request.method == 'POST':
+                return redirect('verifullyConsequenceMana', proposalID)
             return render(request, 'ManagerUI/RiskSummaryMana/fullyBottomConsequenceMana.html', {'data': data, 'proposalID':proposalID, 'ass':rwAss,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
         elif isShell:
             shellConsequences = models.RwCaTank.objects.get(id=proposalID)
@@ -3520,6 +3569,8 @@ def FullyConsequenceMana(request, proposalID):
             data['business_cost'] = roundData.roundMoney(shellConsequences.business_cost)
             data['consequence'] = roundData.roundMoney(shellConsequences.consequence)
             data['consequencecategory'] = shellConsequences.consequencecategory
+            if request.method == 'POST':
+                return redirect('verifullyConsequenceMana', proposalID)
             return render(request, 'ManagerUI/RiskSummaryMana/fullySellConsequenceMana.html', {'data': data, 'proposalID':proposalID, 'ass':rwAss,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
         else:
             ca = models.RwCaLevel1.objects.get(id= proposalID)
@@ -3537,6 +3588,8 @@ def FullyConsequenceMana(request, proposalID):
             data['fc_envi'] = roundData.roundMoney(ca.fc_envi)
             data['fc_total'] = roundData.roundMoney(ca.fc_total)
             data['fcof_category'] = ca.fcof_category
+            if request.method == 'POST':
+                return redirect('verifullyConsequenceMana', proposalID)
             return render(request, 'ManagerUI/RiskSummaryMana/fullyNormalConsequenceMana.html', {'data': data, 'proposalID':proposalID, 'ass':rwAss,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
     except:
         raise Http404
@@ -4128,6 +4181,235 @@ def Inputdata(request, proposalID):
                                                                            'assDate':assDate, 'extDate':extDate,
                                                                            'componentID': rwassessment.componentid_id,
                                                                            'equipmentID': rwassessment.equipmentid_id})
+################ yeu cau kiem dinh Manager ############
+def VeriFullyDamageFactorMana(request, proposalID):
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    try:
+        df = models.RwFullPof.objects.get(id= proposalID)
+        rwAss = models.RwAssessment.objects.get(id= proposalID)
+        data={}
+        component = models.ComponentMaster.objects.get(componentid=rwAss.componentid_id)
+        equip = models.EquipmentMaster.objects.get(equipmentid=component.equipmentid_id)
+        if component.componenttypeid_id == 8 or component.componenttypeid_id == 12 or component.componenttypeid_id == 14 or component.componenttypeid_id == 15:
+            isTank = 1
+        else:
+            isTank = 0
+        if component.componenttypeid_id == 8 or component.componenttypeid_id == 14:
+            isShell = 1
+        else:
+            isShell = 0
+        data['thinningType'] = df.thinningtype
+        data['gfftotal'] = df.gfftotal
+        data['fms'] = df.fms
+        data['thinningap1'] = roundData.roundDF(df.thinningap1)
+        data['thinningap2'] = roundData.roundDF(df.thinningap2)
+        data['thinningap3'] = roundData.roundDF(df.thinningap3)
+        data['sccap1'] = roundData.roundDF(df.sccap1)
+        data['sccap2'] = roundData.roundDF(df.sccap2)
+        data['sccap3'] = roundData.roundDF(df.sccap3)
+        data['externalap1'] = roundData.roundDF(df.externalap1)
+        data['externalap2'] = roundData.roundDF(df.externalap2)
+        data['externalap3'] = roundData.roundDF(df.externalap3)
+        data['htha_ap1'] = roundData.roundDF(df.htha_ap1)
+        data['htha_ap2'] = roundData.roundDF(df.htha_ap2)
+        data['htha_ap3'] = roundData.roundDF(df.htha_ap3)
+        data['brittleap1'] = roundData.roundDF(df.brittleap1)
+        data['brittleap2'] = roundData.roundDF(df.brittleap2)
+        data['brittleap3'] = roundData.roundDF(df.brittleap3)
+        data['fatigueap1'] = roundData.roundDF(df.fatigueap1)
+        data['fatigueap2'] = roundData.roundDF(df.fatigueap2)
+        data['fatigueap3'] = roundData.roundDF(df.fatigueap3)
+        data['thinninggeneralap1'] = roundData.roundDF(df.thinninggeneralap1)
+        data['thinninggeneralap2'] = roundData.roundDF(df.thinninggeneralap2)
+        data['thinninggeneralap3'] = roundData.roundDF(df.thinninggeneralap3)
+        data['thinninglocalap1'] = roundData.roundDF(df.thinninglocalap1)
+        data['thinninglocalap2'] = roundData.roundDF(df.thinninglocalap2)
+        data['thinninglocalap3'] = roundData.roundDF(df.thinninglocalap3)
+        data['totaldfap1'] = roundData.roundDF(df.totaldfap1)
+        data['totaldfap2'] = roundData.roundDF(df.totaldfap2)
+        data['totaldfap3'] = roundData.roundDF(df.totaldfap3)
+        data['pofap1'] = roundData.roundPoF(df.pofap1)
+        data['pofap2'] = roundData.roundPoF(df.pofap2)
+        data['pofap3'] = roundData.roundPoF(df.pofap3)
+        data['pofap1category'] = df.pofap1category
+        data['pofap2category'] = df.pofap2category
+        data['pofap3category'] = df.pofap3category
+        # if request.method == 'POST':
+        #     df.thinningtype = request.POST.get('thinningType')
+        #     df.save()
+        #     ReCalculate.ReCalculate(proposalID)
+        #     return redirect('veridamgeFactorMana', proposalID)
+        if 'Verifica' in request.POST:
+            veri = models.Verification(proposal=rwAss.proposalname, Is_active=0,manager=request.session['name'],facility=equip.facilityid_id,com=component.componentname,eq=equip.equipmentname)
+            veri.save()
+            some_var = request.POST.getlist('check')
+            for some_var in some_var:
+                print(some_var)
+                vericontent=models.VeriContent(Verification_id=veri.id,content=some_var)
+                vericontent.save()
+            return HttpResponse("Bạn đã yêu cầu kiểm định thành công")
+
+    except Exception as e:
+        print(e)
+        raise Http404
+    return render(request, 'ManagerUI/verification_requirments/FullDFV.html', {'obj':data, 'assess': rwAss, 'isTank': isTank,
+                                                                   'isShell': isShell, 'proposalID':proposalID,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
+def VeriFullyConsequenceMana(request, proposalID):
+    data = {}
+    noti = models.ZNotification.objects.all().filter(id_user=request.session['id'])
+    countnoti = noti.filter(state=0).count()
+    count = models.Emailto.objects.filter(Q(Emailt=models.ZUser.objects.filter(id=request.session['id'])[0].email),
+                                          Q(Is_see=0)).count()
+    try:
+        rwAss = models.RwAssessment.objects.get(id=proposalID)
+        component = models.ComponentMaster.objects.get(componentid=rwAss.componentid_id)
+        equip = models.EquipmentMaster.objects.get(equipmentid=component.equipmentid_id)
+        if component.componenttypeid_id == 12 or component.componenttypeid_id == 15:
+            isBottom = 1
+        else:
+            isBottom = 0
+        if component.componenttypeid_id == 8 or component.componenttypeid_id == 14:
+            isShell = 1
+        else:
+            isShell = 0
+        if isBottom:
+            bottomConsequences = models.RwCaTank.objects.get(id=proposalID)
+            data['hydraulic_water'] = roundData.roundFC(bottomConsequences.hydraulic_water)
+            data['hydraulic_fluid'] = roundData.roundFC(bottomConsequences.hydraulic_fluid)
+            data['seepage_velocity'] = roundData.roundFC(bottomConsequences.seepage_velocity)
+            data['flow_rate_d1'] = roundData.roundFC(bottomConsequences.flow_rate_d1)
+            data['flow_rate_d4'] = roundData.roundFC(bottomConsequences.flow_rate_d4)
+            data['leak_duration_d1'] = roundData.roundFC(bottomConsequences.leak_duration_d1)
+            data['leak_duration_d4'] = roundData.roundFC(bottomConsequences.leak_duration_d4)
+            data['release_volume_leak_d1'] = roundData.roundFC(bottomConsequences.release_volume_leak_d1)
+            data['release_volume_leak_d4'] = roundData.roundFC(bottomConsequences.release_volume_leak_d4)
+            data['release_volume_rupture'] = roundData.roundFC(bottomConsequences.release_volume_rupture)
+            data['time_leak_ground'] = roundData.roundFC(bottomConsequences.time_leak_ground)
+            data['volume_subsoil_leak_d1'] = roundData.roundFC(bottomConsequences.volume_subsoil_leak_d1)
+            data['volume_subsoil_leak_d4'] = roundData.roundFC(bottomConsequences.volume_subsoil_leak_d4)
+            data['volume_ground_water_leak_d1'] = roundData.roundFC(bottomConsequences.volume_ground_water_leak_d1)
+            data['volume_ground_water_leak_d4'] = roundData.roundFC(bottomConsequences.volume_ground_water_leak_d4)
+            data['barrel_dike_rupture'] = roundData.roundFC(bottomConsequences.barrel_dike_rupture)
+            data['barrel_onsite_rupture'] = roundData.roundFC(bottomConsequences.barrel_onsite_rupture)
+            data['barrel_offsite_rupture'] = roundData.roundFC(bottomConsequences.barrel_offsite_rupture)
+            data['barrel_water_rupture'] = roundData.roundFC(bottomConsequences.barrel_water_rupture)
+            data['fc_environ_leak'] = roundData.roundMoney(bottomConsequences.fc_environ_leak)
+            data['fc_environ_rupture'] = roundData.roundMoney(bottomConsequences.fc_environ_rupture)
+            data['fc_environ'] = roundData.roundMoney(bottomConsequences.fc_environ)
+            data['material_factor'] = bottomConsequences.material_factor
+            data['component_damage_cost'] = roundData.roundMoney(bottomConsequences.component_damage_cost)
+            data['business_cost'] = roundData.roundMoney(bottomConsequences.business_cost)
+            data['consequence'] = roundData.roundMoney(bottomConsequences.consequence)
+            data['consequencecategory'] = bottomConsequences.consequencecategory
+            if 'Verifica' in request.POST:
+                veri = models.Verification(proposal=rwAss.proposalname, Is_active=0, manager=request.session['name'],
+                                           facility=equip.facilityid_id, com=component.componentname,
+                                           eq=equip.equipmentname)
+                veri.save()
+                some_var = request.POST.getlist('check')
+                for some_var in some_var:
+                    print(some_var)
+                    vericontent = models.VeriContent(Verification_id=veri.id, content=some_var)
+                    vericontent.save()
+                return HttpResponse("Bạn đã yêu cầu kiểm định thành công")
+            return render(request, 'ManagerUI/verification_requirments/fullyBottomConsequenVerification.html', {'data': data, 'proposalID':proposalID, 'ass':rwAss,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
+        elif isShell:
+            shellConsequences = models.RwCaTank.objects.get(id=proposalID)
+            data['flow_rate_d1'] = roundData.roundFC(shellConsequences.flow_rate_d1)
+            data['flow_rate_d2'] = roundData.roundFC(shellConsequences.flow_rate_d2)
+            data['flow_rate_d3'] = roundData.roundFC(shellConsequences.flow_rate_d3)
+            data['flow_rate_d4'] = roundData.roundFC(shellConsequences.flow_rate_d4)
+            data['leak_duration_d1'] = roundData.roundFC(shellConsequences.leak_duration_d1)
+            data['leak_duration_d2'] = roundData.roundFC(shellConsequences.leak_duration_d2)
+            data['leak_duration_d3'] = roundData.roundFC(shellConsequences.leak_duration_d3)
+            data['leak_duration_d4'] = roundData.roundFC(shellConsequences.leak_duration_d4)
+            data['release_volume_leak_d1'] = roundData.roundFC(shellConsequences.release_volume_leak_d1)
+            data['release_volume_leak_d2'] = roundData.roundFC(shellConsequences.release_volume_leak_d2)
+            data['release_volume_leak_d3'] = roundData.roundFC(shellConsequences.release_volume_leak_d3)
+            data['release_volume_leak_d4'] = roundData.roundFC(shellConsequences.release_volume_leak_d4)
+            data['release_volume_rupture'] = roundData.roundFC(shellConsequences.release_volume_rupture)
+            data['time_leak_ground'] = roundData.roundFC(shellConsequences.time_leak_ground)
+            data['volume_subsoil_leak_d1'] = roundData.roundFC(shellConsequences.volume_subsoil_leak_d1)
+            data['volume_subsoil_leak_d4'] = roundData.roundFC(shellConsequences.volume_subsoil_leak_d4)
+            data['volume_ground_water_leak_d1'] = roundData.roundFC(shellConsequences.volume_ground_water_leak_d1)
+            data['volume_ground_water_leak_d4'] = roundData.roundFC(shellConsequences.volume_ground_water_leak_d4)
+            data['barrel_dike_rupture'] = roundData.roundFC(shellConsequences.barrel_dike_rupture)
+            data['barrel_onsite_rupture'] = roundData.roundFC(shellConsequences.barrel_onsite_rupture)
+            data['barrel_offsite_rupture'] = roundData.roundFC(shellConsequences.barrel_offsite_rupture)
+            data['barrel_water_rupture'] = roundData.roundFC(shellConsequences.barrel_water_rupture)
+            data['fc_environ_leak'] = roundData.roundMoney(shellConsequences.fc_environ_leak)
+            data['fc_environ_rupture'] = roundData.roundMoney(shellConsequences.fc_environ_rupture)
+            data['fc_environ'] = roundData.roundMoney(shellConsequences.fc_environ)
+            data['component_damage_cost'] = roundData.roundMoney(shellConsequences.component_damage_cost)
+            data['business_cost'] = roundData.roundMoney(shellConsequences.business_cost)
+            data['consequence'] = roundData.roundMoney(shellConsequences.consequence)
+            data['consequencecategory'] = shellConsequences.consequencecategory
+            if 'Verifica' in request.POST:
+                veri = models.Verification(proposal=rwAss.proposalname, Is_active=0, manager=request.session['name'],
+                                           facility=equip.facilityid_id, com=component.componentname,
+                                           eq=equip.equipmentname)
+                veri.save()
+                some_var = request.POST.getlist('check')
+                for some_var in some_var:
+                    print(some_var)
+                    vericontent = models.VeriContent(Verification_id=veri.id, content=some_var)
+                    vericontent.save()
+                return HttpResponse("Bạn đã yêu cầu kiểm định thành công")
+            return render(request, 'ManagerUI/verification_requirments/fullySellConsequenceVerification.html', {'data': data, 'proposalID':proposalID, 'ass':rwAss,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
+        else:
+            ca = models.RwCaLevel1.objects.get(id= proposalID)
+            inputCa = models.RwInputCaLevel1.objects.get(id= proposalID)
+            data['production_cost'] = roundData.roundMoney(inputCa.production_cost)
+            data['equipment_cost'] = roundData.roundMoney(inputCa.equipment_cost)
+            data['personal_density'] = inputCa.personal_density
+            data['evironment_cost'] = roundData.roundMoney(inputCa.evironment_cost)
+            data['ca_cmd'] = roundData.roundFC(ca.ca_cmd)
+            data['ca_inj_flame'] = roundData.roundFC(ca.ca_inj_flame)
+            data['fc_cmd'] = roundData.roundMoney(ca.fc_cmd)
+            data['fc_affa'] = roundData.roundMoney(ca.fc_affa)
+            data['fc_prod'] = roundData.roundMoney(ca.fc_prod)
+            data['fc_inj'] = roundData.roundMoney(ca.fc_inj)
+            data['fc_envi'] = roundData.roundMoney(ca.fc_envi)
+            data['fc_total'] = roundData.roundMoney(ca.fc_total)
+            data['fcof_category'] = ca.fcof_category
+            if 'Verifica' in request.POST:
+                veri = models.Verification(proposal=rwAss.proposalname, Is_active=0, manager=request.session['name'],
+                                           facility=equip.facilityid_id, com=component.componentname,
+                                           eq=equip.equipmentname)
+                veri.save()
+                some_var = request.POST.getlist('check')
+                for some_var in some_var:
+                    print(some_var)
+                    vericontent = models.VeriContent(Verification_id=veri.id, content=some_var)
+                    vericontent.save()
+                return HttpResponse("Bạn đã yêu cầu kiểm định thành công")
+            return render(request, 'ManagerUI/verification_requirments/fullyNormalConsequenceVericification.html', {'data': data, 'proposalID':proposalID, 'ass':rwAss,'count':count,'noti':noti,'countnoti':countnoti,'info':request.session})
+    except:
+        raise Http404
+def VerificationHome(request):
+    siteid = models.Sites.objects.filter(userID_id=request.session['id'])[0].siteid
+    faci = models.Facility.objects.filter(siteid=siteid)[0]
+    veri = models.Verification.objects.filter(facility=faci.facilityid)
+    delete = models.Verification.objects.all()
+    array=[]
+    for verifi in veri:
+        cont = models.VeriContent.objects.filter(Verification=verifi.id)
+        array.append(cont)
+    if request.method == 'POST':
+        for dele in delete:
+            if request.POST.get('%d' %dele.id):
+                print(dele.id)
+                de=models.Verification.objects.get(id=dele.id)
+                de.delete()
+                return redirect('VerificationHome')
+    for ve in veri:
+        ve.Is_active=1
+        ve.save()
+    return render(request,'ManagerUI/verification_requirments/VerificationContent.html',{'veri':veri,'faci':faci,'arr':array})
+
 
 ################ Citizen UI control ###################
 def citizen_home(request):

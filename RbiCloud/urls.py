@@ -80,6 +80,8 @@ urlpatterns = [
     path('help/AccountManagement/PersonalInfor',views.Help_AccountManagement_PerInfo,name='perinfor'),
     path('help/AccountManagement/AccessDownload',views.Help_AccountManagement_AccessDownload,name='accdownload'),
     path('help/AccountManagement/notification',views.Help_AccountManagement_Notification,name='notification'),
+    path('help/PrivateSafe/',views.Private_Safe,name='PrivateSafe'),
+    path('help/PoliciesReports/',views.Policies_Reports,name='PoliciesReports'),
     ########################## Dang ki tai khoan ################################
     path('AccountCitizen/', views.AccountCitizen, name='accountcitizen'),
     path('AccountBusiness/',views.AccountBusiness, name='accountbusiness'),
@@ -96,6 +98,10 @@ urlpatterns = [
     path('proposalMana/<int:proposalID>/chart/', views.RiskChartMana, name='riskChartMana'),
     path('proposalMana/<int:proposalID>/risk-matrix/', views.RiskMatrixMana, name='riskMatrixMana'),
     path('proposalMana/<int:proposalID>/fully-consequence/',views.FullyConsequenceMana, name='fullyConsequenceMana'),
+    ############# Verification #############
+    path('proposalManaVeri/<int:proposalID>/damage-factor/', views.VeriFullyDamageFactorMana, name='veridamgeFactorMana'),
+    path('proposalManaVeri/<int:proposalID>/fully-consequence/',views.VeriFullyConsequenceMana, name='verifullyConsequenceMana'),
+    path('verification/',views.VerificationHome,name='VerificationHome'),
     ######################### Citizen UI ##############################
     path('citizen/', views.citizen_home, name= 'citizenHome'),
     path('facilityCitizen/display/<int:siteID>/',views.ListfacilityCitizen, name='facilityCitizen'),
